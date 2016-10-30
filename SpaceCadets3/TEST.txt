@@ -1,0 +1,17 @@
+clear z;
+clear x;
+clear y;
+incr z;
+incr z;
+incr z;
+while z not 0 do;
+	decr z;
+	incr x;
+	incr x;
+	incr x;
+	incr x;
+	while x not 0 do;
+		incr y;
+		decr x;
+	end;
+end;

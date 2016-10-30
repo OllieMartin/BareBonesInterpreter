@@ -1,31 +1,70 @@
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
 public class Interpreter {
 
-	protected int pc;
-	protected ArrayList<Integer> returnStack = new ArrayList<Integer>();
-	protected HashMap<String, Variable> variableList = new HashMap<String, Variable>();
-	protected String ci;
-	protected boolean branch;
+	protected int pc; //Program Counter
+	protected ArrayList<Integer> returnStack = new ArrayList<Integer>(); //The return stack for while loops
+	protected HashMap<String, Variable> variableList = new HashMap<String, Variable>(); //Variable identifier mapped to their respective object
+	protected String ci; //Current instruction
+	protected boolean branch; //If a branch has occurred 
 	
 	public Interpreter() {
-		pc = 1;
+		pc = 1; //Set program counter to start at 1
 	}
 	
 	public static void main(String args[]) {
 		
+		String fileline;
 		Program bb = new Program();
-		bb.addInstruction("clear x;");
-		bb.addInstruction("incr z;");
+		Interpreter i = new Interpreter();
+		
+		try {
+            // FileReader reads text files in the default encoding.
+            FileReader fileReader = 
+                new FileReader("BBProgram.txt");
+
+            // Always wrap FileReader in BufferedReader.
+            BufferedReader bufferedReader = 
+                new BufferedReader(fileReader);
+
+            while((fileline = bufferedReader.readLine()) != null) {
+                bb.addInstruction(fileline);
+            }   
+
+            // Always close files.
+            bufferedReader.close();         
+        }
+        catch(FileNotFoundException ex) {
+            System.out.println(
+                "File doesnt exist");           
+        }
+        catch(IOException ex) {
+            System.out.println(
+                "Error reading file");               
+            // Or we could just do this: 
+            // ex.printStackTrace();
+        }
+		
+		/*bb.addInstruction("clear x;");
 		bb.addInstruction("incr z;");
 		bb.addInstruction("incr z;");
 		bb.addInstruction("incr z;");
 		bb.addInstruction("while z not 0 do;");
-		bb.addInstruction("incr x;");
 		bb.addInstruction("decr z;");
+		bb.addInstruction("incr x;");
+		bb.addInstruction("incr x;");
+		bb.addInstruction("incr x;");
+		bb.addInstruction("incr x;");
+		bb.addInstruction("while x not 0 do;");
+		bb.addInstruction("incr y;");
+		bb.addInstruction("decr x;");
 		bb.addInstruction("end;");
-		Interpreter i = new Interpreter();
+		bb.addInstruction("end;");*/
 		i.interpret(bb);
 		
 	}
@@ -37,7 +76,7 @@ public class Interpreter {
 		
 		while (!(pc > p.getLineCount())) {
 			cline = p.getInstruction(pc);
-			
+			System.out.println(cline);
 			if (cline.endsWith(";")) {
 				cline = cline.substring(0, cline.length() -1);
 			} else {
@@ -77,7 +116,15 @@ public class Interpreter {
 				branch = false;
 			}
 			
+			for (Variable v : variableList.values()) {
+				System.out.println(v.getIdentifier() + " = " + v.getValue());
+			}
+			
+			System.out.println("-----------");
+			
 		}
+		
+		System.out.println("*** FINAL RESULT ***");
 		
 		for (Variable v : variableList.values()) {
 			System.out.println(v.getIdentifier() + " = " + v.getValue());
@@ -180,10 +227,17 @@ public class Interpreter {
 		}
 		if (cvar.getValue() == 0) {
 			String sline = "";
+			int whilecount = 0;
 			do {
 				pc++;
 				sline = p.getInstruction(pc);
-			} while (pc <= p.getLineCount() && !sline.equals("end;"));
+				if (sline.startsWith("while")) {
+					whilecount++;
+				}
+				if (sline.equals("end;")) {
+					whilecount--;
+				}
+			} while (pc <= p.getLineCount() && (!sline.equals("end;") || whilecount > -1));
 			branch = true;
 			pc++;
 		} else {

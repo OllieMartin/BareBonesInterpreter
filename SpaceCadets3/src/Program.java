@@ -15,7 +15,16 @@ public class Program {
 	}
 	
 	public String getInstruction(int line) {
-		return instructions.get(line-1);
+		String instruction;
+		instruction = instructions.get(line-1);
+		while (instruction.startsWith("\t") || instruction.startsWith(" ")) {
+			if (instruction.startsWith("\t")) {
+				instruction = instruction.replaceFirst("\t", "");
+			} else {
+				instruction = instruction.replaceFirst(" ", "");
+			}
+		}
+		return instruction;
 	}
 	
 	public int getLineCount() {
