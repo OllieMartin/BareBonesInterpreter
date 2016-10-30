@@ -18,25 +18,20 @@ public class Interpreter {
 	}
 	
 	public static void main(String args[]) {
-		
+
 		String fileline;
 		Program bb = new Program();
 		Interpreter i = new Interpreter();
 		
 		try {
-            // FileReader reads text files in the default encoding.
             FileReader fileReader = 
                 new FileReader("BBProgram.txt");
-
-            // Always wrap FileReader in BufferedReader.
             BufferedReader bufferedReader = 
                 new BufferedReader(fileReader);
 
             while((fileline = bufferedReader.readLine()) != null) {
                 bb.addInstruction(fileline);
             }   
-
-            // Always close files.
             bufferedReader.close();         
         }
         catch(FileNotFoundException ex) {
@@ -46,25 +41,8 @@ public class Interpreter {
         catch(IOException ex) {
             System.out.println(
                 "Error reading file");               
-            // Or we could just do this: 
-            // ex.printStackTrace();
         }
 		
-		/*bb.addInstruction("clear x;");
-		bb.addInstruction("incr z;");
-		bb.addInstruction("incr z;");
-		bb.addInstruction("incr z;");
-		bb.addInstruction("while z not 0 do;");
-		bb.addInstruction("decr z;");
-		bb.addInstruction("incr x;");
-		bb.addInstruction("incr x;");
-		bb.addInstruction("incr x;");
-		bb.addInstruction("incr x;");
-		bb.addInstruction("while x not 0 do;");
-		bb.addInstruction("incr y;");
-		bb.addInstruction("decr x;");
-		bb.addInstruction("end;");
-		bb.addInstruction("end;");*/
 		i.interpret(bb);
 		
 	}
@@ -257,6 +235,10 @@ public class Interpreter {
 		pc = returnStack.get(returnStack.size() -1);
 		returnStack.remove(returnStack.size() - 1);
 		branch = true;
+	}
+	
+	public HashMap<String, Variable> getVarList() {
+		return variableList;
 	}
 	
 }
