@@ -1,7 +1,3 @@
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -12,39 +8,17 @@ public class Interpreter {
 	protected HashMap<String, Variable> variableList = new HashMap<String, Variable>(); //Variable identifier mapped to their respective object
 	protected String ci; //Current instruction
 	protected boolean branch; //If a branch has occurred 
+	protected boolean outputToIDE;
+	protected IDE currentIDE;
 	
 	public Interpreter() {
 		pc = 1; //Set program counter to start at 1
+		outputToIDE = false;
 	}
-	
-	public static void main(String args[]) {
-
-		String fileline;
-		Program bb = new Program();
-		Interpreter i = new Interpreter();
-		
-		try {
-            FileReader fileReader = 
-                new FileReader("BBProgram.txt");
-            BufferedReader bufferedReader = 
-                new BufferedReader(fileReader);
-
-            while((fileline = bufferedReader.readLine()) != null) {
-                bb.addInstruction(fileline);
-            }   
-            bufferedReader.close();         
-        }
-        catch(FileNotFoundException ex) {
-            System.out.println(
-                "File doesnt exist");           
-        }
-        catch(IOException ex) {
-            System.out.println(
-                "Error reading file");               
-        }
-		
-		i.interpret(bb);
-		
+	public Interpreter(IDE ide) {
+		pc = 1; //Set program counter to start at 1
+		outputToIDE = true;
+		currentIDE = ide;
 	}
 	
 	public void interpret(Program p) {
@@ -54,7 +28,11 @@ public class Interpreter {
 		
 		while (!(pc > p.getLineCount())) {
 			cline = p.getInstruction(pc);
-			System.out.println(cline);
+			if (outputToIDE) {
+				currentIDE.addOutputLine(cline);
+			} else {
+				System.out.println(cline);
+			}
 			if (cline.endsWith(";")) {
 				cline = cline.substring(0, cline.length() -1);
 			} else {
@@ -94,12 +72,7 @@ public class Interpreter {
 				branch = false;
 			}
 			
-			for (Variable v : variableList.values()) {
-				System.out.println(v.getIdentifier() + " = " + v.getValue());
-			}
-			
-			System.out.println("-----------");
-			
+			outputVars();
 		}
 		
 		System.out.println("*** FINAL RESULT ***");
@@ -232,6 +205,13 @@ public class Interpreter {
 			System.exit(0);
 		}
 		
+		if(returnStack.size() == 0) {
+			System.err.println("Fatal error occured executing END");
+			System.err.println("Line: " + pc);
+			System.err.println("ERROR CODE 6: Disconnected END command, returnStack empty");
+			System.exit(0);
+		}
+		
 		pc = returnStack.get(returnStack.size() -1);
 		returnStack.remove(returnStack.size() - 1);
 		branch = true;
@@ -239,6 +219,20 @@ public class Interpreter {
 	
 	public HashMap<String, Variable> getVarList() {
 		return variableList;
+	}
+	
+	public void outputVars() {
+		if (outputToIDE) {
+			for (Variable v : variableList.values()) {
+				currentIDE.addOutputLine(v.getIdentifier() + " = " + v.getValue());
+			}
+			currentIDE.addOutputLine("-----------");
+		} else {
+			for (Variable v : variableList.values()) {
+				System.out.println(v.getIdentifier() + " = " + v.getValue());
+			}
+			System.out.println("-----------");
+		}
 	}
 	
 }
