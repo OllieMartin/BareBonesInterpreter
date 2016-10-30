@@ -8,11 +8,23 @@ import javax.swing.text.*;
 public class IDE extends JFrame {
 
 	public IDE thisIDE = this;
-	private JTextArea editor = new JTextArea(20,60);
-	private JTextArea output = new JTextArea(20,60);
+	private JTextArea editor = new JTextArea(20,80);
+	private JTextArea output = new JTextArea(20,70);
 	private JFileChooser fChooser = new JFileChooser(System.getProperty("user.dir"));
 	private String currentFile = "Untitled";
 	private boolean newChanges = false;
+	private TextAreaOutputStream taOutputStream = new TextAreaOutputStream(
+	         output, "Interpreter Output");
+	private TextAreaOutputStream errorOutputStream = new TextAreaOutputStream(
+	         output, "ERROR");
+	
+	public TextAreaOutputStream getOutputStream() {
+		return taOutputStream;
+	}
+	
+	public TextAreaOutputStream getErrorStream() {
+		return errorOutputStream;
+	}
 	
 	private KeyListener k1 = new KeyAdapter() {
 		public void keyPressed(KeyEvent e) {
@@ -93,10 +105,7 @@ public class IDE extends JFrame {
 	                "Error reading file");               
 	        }
 			
-			i.interpret(currentProgram);
-			output.append("*** FINAL OUTPUT *** \n");
-			i.outputVars();
-			
+				i.interpret(currentProgram);
 		}
 	};
 	
@@ -208,6 +217,10 @@ public class IDE extends JFrame {
 		}
 		catch(IOException e) {
 		}
+	}
+	
+	public void clearOutput() {
+		output.setText("");
 	}
 	
 }

@@ -1,0 +1,4 @@
+clear x;
+incr x;
+incr x;
+incr y;

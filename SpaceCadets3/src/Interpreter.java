@@ -1,3 +1,4 @@
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -8,38 +9,42 @@ public class Interpreter {
 	protected HashMap<String, Variable> variableList = new HashMap<String, Variable>(); //Variable identifier mapped to their respective object
 	protected String ci; //Current instruction
 	protected boolean branch; //If a branch has occurred 
-	protected boolean outputToIDE;
 	protected IDE currentIDE;
 	
 	public Interpreter() {
 		pc = 1; //Set program counter to start at 1
-		outputToIDE = false;
+		currentIDE = null;
 	}
 	public Interpreter(IDE ide) {
 		pc = 1; //Set program counter to start at 1
-		outputToIDE = true;
 		currentIDE = ide;
+		System.setOut(new PrintStream(currentIDE.getOutputStream()));
+		System.setErr(new PrintStream(currentIDE.getErrorStream()));
 	}
 	
 	public void interpret(Program p) {
 
-		String cline;
-		String[] cis;
+		try {
 		
+		//If linked to an IDE then clear the output box
+		if (currentIDE != null) {
+			currentIDE.clearOutput();
+		}
+		
+		String cline; //Current program line data
+		String[] cis; //Current instruction split into components
+		
+		//While end of the program has not yet been reached
 		while (!(pc > p.getLineCount())) {
-			cline = p.getInstruction(pc);
-			if (outputToIDE) {
-				currentIDE.addOutputLine(cline);
-			} else {
-				System.out.println(cline);
-			}
+			cline = p.getInstruction(pc); //Get the program line corresponding to the program counter
+			System.out.println(cline); //Output this line
+			
+			//If correctly deliminated then remove deliminator for processing
 			if (cline.endsWith(";")) {
 				cline = cline.substring(0, cline.length() -1);
 			} else {
-				System.err.println("Fatal error occured executing an instruction");
-				System.err.println("Line: " + pc);
-				System.err.println("ERROR CODE 1: Undeliminated instruction");
-				System.exit(0);
+				//Otherwise throw error 1
+				throw new InterpreterException(1,pc);
 			}
 			cis = cline.split(" ");
 			
@@ -60,10 +65,7 @@ public class Interpreter {
 					end(cis);
 					break;
 				default:
-					System.err.println("Fatal error occured during execution");
-					System.err.println("Line: " + pc);
-					System.err.println("ERROR CODE 5: Unrecognised command word");
-					System.exit(0);
+					throw new InterpreterException(5,pc);
 				}
 			
 			if (!branch) {
@@ -77,19 +79,17 @@ public class Interpreter {
 		
 		System.out.println("*** FINAL RESULT ***");
 		
-		for (Variable v : variableList.values()) {
-			System.out.println(v.getIdentifier() + " = " + v.getValue());
-		}
+		outputVars();
 		
+		} catch (InterpreterException ie) {
+			ie.displayDetails();
+		}
 	}
 	
-	protected void clear(String[] args) {	
+	protected void clear(String[] args) throws InterpreterException {	
 		
 		if (args.length != 2) {
-			System.err.println("Fatal error occured executing CLEAR command");
-			System.err.println("Line: " + pc);
-			System.err.println("ERROR CODE 2: Incorrect number of arguments [Expected 1]");
-			System.exit(0);
+			throw new InterpreterException(2,pc,"clear");
 		}
 		
 		Variable cvar;
@@ -102,14 +102,10 @@ public class Interpreter {
 		}
 		cvar.setValue(0);
 	}
-	
-	protected void incr(String[] args) {
+	protected void incr(String[] args) throws InterpreterException {
 		
 		if (args.length != 2) {
-			System.err.println("Fatal error occured executing INCR command");
-			System.err.println("Line: " + pc);
-			System.err.println("ERROR CODE 2: Incorrect number of arguments [Expected 1]");
-			System.exit(0);
+			throw new InterpreterException(2,pc, "incr");
 		}
 		
 		Variable cvar;
@@ -123,14 +119,10 @@ public class Interpreter {
 		cvar.setValue(cvar.getValue() + 1);
 		
 	}
-	
-	protected void decr(String[] args) {
+	protected void decr(String[] args) throws InterpreterException {
 		
 		if (args.length != 2) {
-			System.err.println("Fatal error occured executing DECR command");
-			System.err.println("Line: " + pc);
-			System.err.println("ERROR CODE 2: Incorrect number of arguments [Expected 1]");
-			System.exit(0);
+			throw new InterpreterException(2,pc,"decr");
 		}
 		
 		Variable cvar;
@@ -141,31 +133,16 @@ public class Interpreter {
 			variableList.put(args[1], new Variable(args[1]));
 			cvar = variableList.get(args[1]);
 		}
-		try {
-			if (cvar.getValue() - 1 < 0) throw new Exception();
-			cvar.setValue(cvar.getValue() - 1);
-		} catch (Exception e) {
-			System.err.println("Fatal error occured executing DECR command");
-			System.err.println("Line: " + pc);
-			System.err.println("ERROR CODE 3: Cannot decrease variable (" + cvar.getIdentifier() + ") below 0");
-			System.exit(0);
-		}
+		if (cvar.getValue() - 1 < 0) throw new InterpreterException(3,pc); else cvar.setValue(cvar.getValue() - 1);
 	}
-	
-	protected void whiledo(String args[], Program p) {
+	protected void whiledo(String args[], Program p) throws InterpreterException {
 		
 		if (args.length != 5) {
-			System.err.println("Fatal error occured executing WHILE NOT 0 DO command");
-			System.err.println("Line: " + pc);
-			System.err.println("ERROR CODE 2: Incorrect number of arguments [Expected 4]");
-			System.exit(0);
+			throw new InterpreterException(2,pc,"while not 0 do");
 		}
 		
 		if (!args[2].equals("not") || !args[3].equals("0") || !args[4].equals("do")) {
-			System.err.println("Fatal error occured executing WHILE NOT 0 DO command");
-			System.err.println("Line: " + pc);
-			System.err.println("ERROR CODE 4: Invalid argument values, Must follow format 'while <variable> not 0 do'");
-			System.exit(0);
+			throw new InterpreterException(4,pc);
 		}
 		
 		Variable cvar;
@@ -195,21 +172,14 @@ public class Interpreter {
 			returnStack.add(pc);
 		}
 	}
-	
-	protected void end(String args[]) {
+	protected void end(String args[]) throws InterpreterException {
 		
 		if (args.length != 1) {
-			System.err.println("Fatal error occured executing END");
-			System.err.println("Line: " + pc);
-			System.err.println("ERROR CODE 2: Incorrect number of arguments [Expected 0]");
-			System.exit(0);
+			throw new InterpreterException(2,pc,"end");
 		}
 		
 		if(returnStack.size() == 0) {
-			System.err.println("Fatal error occured executing END");
-			System.err.println("Line: " + pc);
-			System.err.println("ERROR CODE 6: Disconnected END command, returnStack empty");
-			System.exit(0);
+			throw new InterpreterException(6,pc);
 		}
 		
 		pc = returnStack.get(returnStack.size() -1);
@@ -217,22 +187,11 @@ public class Interpreter {
 		branch = true;
 	}
 	
-	public HashMap<String, Variable> getVarList() {
-		return variableList;
-	}
-	
 	public void outputVars() {
-		if (outputToIDE) {
-			for (Variable v : variableList.values()) {
-				currentIDE.addOutputLine(v.getIdentifier() + " = " + v.getValue());
-			}
-			currentIDE.addOutputLine("-----------");
-		} else {
 			for (Variable v : variableList.values()) {
 				System.out.println(v.getIdentifier() + " = " + v.getValue());
 			}
 			System.out.println("-----------");
-		}
 	}
-	
+
 }
