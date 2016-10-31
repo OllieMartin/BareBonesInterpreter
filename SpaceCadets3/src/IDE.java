@@ -72,6 +72,9 @@ public class IDE extends JFrame {
 			editor.setText("");
 			currentFile = "Untitled";
 			newChanges = false;
+			setTitle(currentFile);
+			Save.setEnabled(false);
+			SaveAs.setEnabled(false);
 		}
 	};
 	

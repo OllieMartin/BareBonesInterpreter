@@ -1,4 +1,15 @@
-clear x;
 incr x;
 incr x;
-incr y;
+incr x;
+incr x;
+incr x;
+incr x;
+incr x;
+incr x;
+incr x;
+incr x;
+incr x;
+while x not 0 do;
+	decr x;
+	incr y;
+end;
