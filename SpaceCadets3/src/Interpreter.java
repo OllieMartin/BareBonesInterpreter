@@ -81,6 +81,10 @@ public class Interpreter {
 		
 		outputVars();
 		
+		if (returnStack.size() != 0) {
+			throw new InterpreterException(8,pc);
+		}
+		
 		} catch (InterpreterException ie) {
 			ie.displayDetails();
 		}
@@ -165,7 +169,10 @@ public class Interpreter {
 				if (sline.equals("end;")) {
 					whilecount--;
 				}
-			} while (pc <= p.getLineCount() && (!sline.equals("end;") || whilecount > -1));
+			} while (pc < p.getLineCount() && (!sline.equals("end;") || whilecount > -1));
+			if (pc == p.getLineCount()) {
+				throw new InterpreterException(7,pc);
+			}
 			branch = true;
 			pc++;
 		} else {

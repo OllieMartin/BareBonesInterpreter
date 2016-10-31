@@ -61,6 +61,20 @@ public class InterpreterException extends Exception {
 			System.err.println("Line: " + line);
 			System.err.println("ERROR CODE 6: Disconnected END command, returnStack empty");
 			break;
+		case 7:
+			System.err.println("Fatal error occured executing WHILE NOT 0 DO");
+			System.err.println("Line: " + line);
+			System.err.println("ERROR CODE 7: No END command found to terminate loop");
+			break;
+		case 8:
+			System.err.println("Warning for at least one WHILE NOT 0 DO loop in the program...");
+			System.err.println("ERROR CODE 8: END statement for this loop is missing");
+			System.err.println("As the loop condition was true the code executed");
+			System.err.println("This continued to the end of the program");
+			System.err.println("However; if the condition were false...");
+			System.err.println("...then no END statement would have been found to jump to");
+			System.err.println("This would result in a fatal run time error");
+			break;
 		}
 	}
 
