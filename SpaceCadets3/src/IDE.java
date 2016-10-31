@@ -1,8 +1,14 @@
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import javax.swing.*;
 import javax.swing.text.*;
+import javax.swing.text.Highlighter.HighlightPainter;
 
 @SuppressWarnings("serial")
 public class IDE extends JFrame {
@@ -18,6 +24,13 @@ public class IDE extends JFrame {
 	private TextAreaOutputStream errorOutputStream = new TextAreaOutputStream(
 	         output, "ERROR");
 	
+	Highlighter h = editor.getHighlighter();
+    HighlightPainter painter = 
+           new DefaultHighlighter.DefaultHighlightPainter(Color.cyan);
+    
+    HighlightPainter painter2 = 
+            new DefaultHighlighter.DefaultHighlightPainter(Color.orange);
+	
 	public TextAreaOutputStream getOutputStream() {
 		return taOutputStream;
 	}
@@ -31,9 +44,73 @@ public class IDE extends JFrame {
 			newChanges = true;
 			Save.setEnabled(true);
 			SaveAs.setEnabled(true);
+			
+			/*if (editor.getText().matches("([^\"[^\".*\"]]*clear(.|\n)*)+")) {
+			for (int i = -1; (i = editor.getText().indexOf("clear", i + 1)) != -1; ) {
+				try {
+					h.addHighlight(i, i + "clear".length(), painter );
+				} catch (BadLocationException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+			}
+			} // prints "4", "13", "22"*/
+
+		}
+		public void keyTyped(KeyEvent e) {
+			Timer time = new Timer();
+			time.schedule(new TimerTask() {
+				@Override
+				public void run() {
+					highlightSyntax();
+				}
+			}, 5);
 		}
 	};
 	
+	public void highlightSyntax() {
+		h.removeAllHighlights();
+		highlightErrors();
+		Pattern pattern = Pattern.compile("(?m)(?=[^\"]*(?:\"[^\"]*\"[^\"]*)*$)(clear|incr|decr|end|not|while|do)(" + whitespace_chars + "|$| |;)");
+	    Matcher matcher = pattern.matcher(editor.getText());
+	    // Check all occurrences
+	    while (matcher.find()) {
+	        try {
+				h.addHighlight(matcher.start(1), matcher.end(1), painter );
+			} catch (BadLocationException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+	    }
+	}
+	
+	public void highlightErrors() {
+		for (int i = 0; i <= editor.getLineCount() -1 ; i++) {
+			try {
+				if (!(editor.getText(editor.getLineStartOffset(i), editor.getLineEndOffset(i) - editor.getLineStartOffset(i)).endsWith(";")) && !(editor.getText(editor.getLineStartOffset(i), editor.getLineEndOffset(i) - editor.getLineStartOffset(i)).endsWith(";\n"))) {
+					try {
+						h.addHighlight(editor.getLineStartOffset(i), editor.getLineEndOffset(i), painter2);
+					} catch (BadLocationException e) {
+						// TODO Auto-generated catch block
+						//e.printStackTrace();
+					}	
+				}
+			} catch (BadLocationException e) {
+				// TODO Auto-generated catch block
+				//e.printStackTrace();
+			}
+		}
+	}
+	
+	public void highlightLine(int line) {
+		h.removeAllHighlights();
+		try {
+			h.addHighlight(editor.getLineStartOffset(line), editor.getLineEndOffset(line), painter2);
+		} catch (BadLocationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}	
+	}
 	Action Open = new AbstractAction("Open") {
 		public void actionPerformed(ActionEvent e) {
 			saveOld();
@@ -41,6 +118,7 @@ public class IDE extends JFrame {
 				readInFile(fChooser.getSelectedFile().getAbsolutePath());
 			}
 			SaveAs.setEnabled(true);
+			highlightSyntax();
 		}
 	};
 	
@@ -225,6 +303,35 @@ public class IDE extends JFrame {
 	public void clearOutput() {
 		output.setText("");
 	}
+	
+	String whitespace_chars =  ""       /* dummy empty string for homogeneity */
+            + "\\u0009" // CHARACTER TABULATION
+            + "\\u000A" // LINE FEED (LF)
+            + "\\u000B" // LINE TABULATION
+            + "\\u000C" // FORM FEED (FF)
+            + "\\u000D" // CARRIAGE RETURN (CR)
+            + "\\u0020" // SPACE
+            + "\\u0085" // NEXT LINE (NEL) 
+            + "\\u00A0" // NO-BREAK SPACE
+            + "\\u1680" // OGHAM SPACE MARK
+            + "\\u180E" // MONGOLIAN VOWEL SEPARATOR
+            + "\\u2000" // EN QUAD 
+            + "\\u2001" // EM QUAD 
+            + "\\u2002" // EN SPACE
+            + "\\u2003" // EM SPACE
+            + "\\u2004" // THREE-PER-EM SPACE
+            + "\\u2005" // FOUR-PER-EM SPACE
+            + "\\u2006" // SIX-PER-EM SPACE
+            + "\\u2007" // FIGURE SPACE
+            + "\\u2008" // PUNCTUATION SPACE
+            + "\\u2009" // THIN SPACE
+            + "\\u200A" // HAIR SPACE
+            + "\\u2028" // LINE SEPARATOR
+            + "\\u2029" // PARAGRAPH SEPARATOR
+            + "\\u202F" // NARROW NO-BREAK SPACE
+            + "\\u205F" // MEDIUM MATHEMATICAL SPACE
+            + "\\u3000" // IDEOGRAPHIC SPACE
+            ;      
 	
 }
 

@@ -33,9 +33,12 @@ public class Interpreter {
 		
 		String cline; //Current program line data
 		String[] cis; //Current instruction split into components
-		
 		//While end of the program has not yet been reached
 		while (!(pc > p.getLineCount())) {
+			if (currentIDE != null) {
+				currentIDE.highlightLine(pc-1);
+			}
+			
 			cline = p.getInstruction(pc); //Get the program line corresponding to the program counter
 			System.out.println(cline); //Output this line
 			

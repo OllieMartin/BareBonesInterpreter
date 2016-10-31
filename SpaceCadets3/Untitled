@@ -1,5 +1,6 @@
-clear x;
 incr x;
+incr y;
+clear z;
 while x not 0 do;
-incr x;
+	incr x;
 end;
