@@ -87,6 +87,7 @@ public class IDE extends JFrame {
 	public void highlightErrors() {
 		for (int i = 0; i <= editor.getLineCount() -1 ; i++) {
 			try {
+				if (!(editor.getText(editor.getLineStartOffset(i), editor.getLineEndOffset(i) - editor.getLineStartOffset(i)).equals("\n"))) {
 				if (!(editor.getText(editor.getLineStartOffset(i), editor.getLineEndOffset(i) - editor.getLineStartOffset(i)).endsWith(";")) && !(editor.getText(editor.getLineStartOffset(i), editor.getLineEndOffset(i) - editor.getLineStartOffset(i)).endsWith(";\n"))) {
 					try {
 						h.addHighlight(editor.getLineStartOffset(i), editor.getLineEndOffset(i), painter2);
@@ -94,6 +95,7 @@ public class IDE extends JFrame {
 						// TODO Auto-generated catch block
 						//e.printStackTrace();
 					}	
+				}
 				}
 			} catch (BadLocationException e) {
 				// TODO Auto-generated catch block
@@ -173,7 +175,9 @@ public class IDE extends JFrame {
 	                new BufferedReader(fileReader);
 
 	            while((fileline = bufferedReader.readLine()) != null) {
-	                currentProgram.addInstruction(fileline);
+	            	//if (!fileline.equals("")) {
+	            		currentProgram.addInstruction(fileline);
+	            	//}
 	            }   
 	            bufferedReader.close();         
 	        }
@@ -334,40 +338,3 @@ public class IDE extends JFrame {
             ;      
 	
 }
-
-/*
- *  9
-down vote
-	
-
-Use the DefaultHighlighter that comes with your JTextArea. For e.g.,
-
-import java.awt.Color;
-import javax.swing.*;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.DefaultHighlighter;
-import javax.swing.text.Highlighter;
-import javax.swing.text.Highlighter.HighlightPainter;
-
-public class Foo001 {
-   public static void main(String[] args) throws BadLocationException {
-
-      JTextArea textArea = new JTextArea(10, 30);
-
-      String text = "hello world. How are you?";
-
-      textArea.setText(text);
-
-      Highlighter highlighter = textArea.getHighlighter();
-      HighlightPainter painter = 
-             new DefaultHighlighter.DefaultHighlightPainter(Color.pink);
-      int p0 = text.indexOf("world");
-      int p1 = p0 + "world".length();
-      highlighter.addHighlight(p0, p1, painter );
-
-      JOptionPane.showMessageDialog(null, new JScrollPane(textArea));          
-   }
-}
-
-
- */

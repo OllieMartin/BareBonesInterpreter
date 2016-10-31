@@ -47,7 +47,9 @@ public class Interpreter {
 				cline = cline.substring(0, cline.length() -1);
 			} else {
 				//Otherwise throw error 1
-				throw new InterpreterException(1,pc);
+				if (!cline.equals("")) {
+					throw new InterpreterException(1,pc);
+				}
 			}
 			cis = cline.split(" ");
 			
@@ -66,6 +68,8 @@ public class Interpreter {
 					break;
 				case "end":
 					end(cis);
+					break;
+				case "":
 					break;
 				default:
 					throw new InterpreterException(5,pc);
@@ -172,9 +176,12 @@ public class Interpreter {
 				if (sline.equals("end;")) {
 					whilecount--;
 				}
-			} while (pc < p.getLineCount() && (!sline.equals("end;") || whilecount > -1));
-			if (pc == p.getLineCount()) {
+			} while (pc <= p.getLineCount() && (!sline.equals("end;") || whilecount > -1));
+			if (whilecount > -1) {
 				throw new InterpreterException(7,pc);
+			}
+			if (currentIDE != null) {
+				currentIDE.highlightLine(pc-1);
 			}
 			branch = true;
 			pc++;

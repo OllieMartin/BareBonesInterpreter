@@ -1,6 +1,27 @@
 incr x;
-incr y;
-clear z;
+incr x;
+incr x;
+incr x;
+incr x;
+incr x;
+incr x;
+incr x;
+incr x;
+incr x;
+incr x;
+incr x;
+
 while x not 0 do;
-	incr x;
+
+	decr x;
+
+	incr z;
+	incr z;
+	incr z;
+
+	while z not 0 do;
+
+		decr z;
+		incr result;
+	end;
 end;
