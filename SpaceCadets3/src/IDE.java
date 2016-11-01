@@ -30,6 +30,9 @@ public class IDE extends JFrame {
     
     HighlightPainter painter2 = 
             new DefaultHighlighter.DefaultHighlightPainter(Color.orange);
+    
+    HighlightPainter painter3 = 
+            new DefaultHighlighter.DefaultHighlightPainter(Color.green);
 	
 	public TextAreaOutputStream getOutputStream() {
 		return taOutputStream;
@@ -107,7 +110,7 @@ public class IDE extends JFrame {
 	public void highlightLine(int line) {
 		h.removeAllHighlights();
 		try {
-			h.addHighlight(editor.getLineStartOffset(line), editor.getLineEndOffset(line), painter2);
+			h.addHighlight(editor.getLineStartOffset(line), editor.getLineEndOffset(line), painter3);
 		} catch (BadLocationException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
